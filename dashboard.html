@@ -13,13 +13,13 @@
   </style>
   <link rel="stylesheet" href="https://js.arcgis.com/4.15/esri/themes/light/main.css">  <script src="https://js.arcgis.com/4.15/"></script>
   <script>
-    console.log("Presiona ")
     require([
       "esri/views/MapView",
       "esri/widgets/Legend",
       "esri/widgets/LayerList",
+      "esri/widgets/Search",
       "esri/WebMap"
-    ], function(MapView, Legend, LayerList, WebMap) {
+    ], function(MapView, Legend, LayerList, Search, WebMap) {
       var webmap = new WebMap({
         portalItem: {
           // autocasts as new PortalItem()
@@ -67,7 +67,9 @@
         // when the resources in the MapView have loaded.
         // Create the LayerList widget with the associated actions
       // and add it to the top-right corner of the view.
-
+      var search = new Search({
+        view: view
+      });
       var layerList = new LayerList({
         view: view,
         // executes for each ListItem in the LayerList
@@ -155,9 +157,11 @@
         });
 
         // Add widget to the bottom right corner of the view
+        view.ui.add(search, "top-right");
         view.ui.add(legend, "bottom-right");
         view.ui.add(legend2, "bottom-right");
         view.ui.add(legend3, "bottom-right");
+        //view.ui.add(search, "top-right");
         
       });
     });
@@ -165,7 +169,7 @@
 </head>
 <body>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-
+    <div style="background-color:#243040; color: whitesmoke; text-align: center; font-family: Open Sans, sans-serif; font-weight: bold;">Presiona los diferentes puntos para obtener retroalimentacion por pais <br></br></div>
 		<div id="viewDiv"></div>
 
 <style>
