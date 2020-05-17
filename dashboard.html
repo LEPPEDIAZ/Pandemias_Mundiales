@@ -13,6 +13,7 @@
   </style>
   <link rel="stylesheet" href="https://js.arcgis.com/4.15/esri/themes/light/main.css">  <script src="https://js.arcgis.com/4.15/"></script>
   <script>
+    console.log("Presiona ")
     require([
       "esri/views/MapView",
       "esri/widgets/Legend",
@@ -118,13 +119,14 @@
       // Add widget to the top right corner of the view
       view.ui.add(layerList, "top-right");
         var featureLayer = webmap.layers.getItemAt(1);
-        var featureLayer2 = webmap.layers.getItemAt(0);
+        var featureLayer2 = webmap.layers.getItemAt(2);
+        var featureLayer3 = webmap.layers.getItemAt(0);
         var legend = new Legend({
           view: view,
           layerInfos: [
             {
               layer: featureLayer,
-              title: "COVID-19"
+              title: "VIH"
             }
           ]
           
@@ -135,7 +137,18 @@
           layerInfos: [
             {
               layer: featureLayer2,
-              title: "VIH"
+              title: "COVID-19"
+            }
+          ]
+          
+        });
+
+        var legend3 = new Legend({
+          view: view,
+          layerInfos: [
+            {
+              layer: featureLayer3,
+              title: "COVID-19 HeatMap"
             }
           ]
           
@@ -144,6 +157,7 @@
         // Add widget to the bottom right corner of the view
         view.ui.add(legend, "bottom-right");
         view.ui.add(legend2, "bottom-right");
+        view.ui.add(legend3, "bottom-right");
         
       });
     });
