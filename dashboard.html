@@ -2,7 +2,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>ArcGIS JavaScript Tutorials: Display a Web Map</title>
+  <title>Pandemias Mundiales </title>
   <style>
     html, body, #viewDiv {
       padding: 0;
@@ -14,12 +14,13 @@
   <link rel="stylesheet" href="https://js.arcgis.com/4.15/esri/themes/light/main.css">  <script src="https://js.arcgis.com/4.15/"></script>
   <script>
     require([
-      "esri/WebMap",
-      "esri/views/MapView"
-    ], function(WebMap, MapView) {
-
+      "esri/views/MapView",
+      "esri/widgets/Legend",
+      "esri/WebMap"
+    ], function(MapView, Legend, WebMap) {
       var webmap = new WebMap({
         portalItem: {
+          // autocasts as new PortalItem()
           id: "ce1ec47baaa3400ba67542911ee5aa3f"
         }
       });
@@ -28,7 +29,38 @@
         container: "viewDiv",
         map: webmap
       });
-      
+
+      view.when(function() {
+        // get the first layer in the collection of operational layers in the WebMap
+        // when the resources in the MapView have loaded.
+        var featureLayer = webmap.layers.getItemAt(1);
+        var featureLayer2 = webmap.layers.getItemAt(0);
+        var legend = new Legend({
+          view: view,
+          layerInfos: [
+            {
+              layer: featureLayer,
+              title: "COVID-19"
+            }
+          ]
+          
+        });
+
+        var legend2 = new Legend({
+          view: view,
+          layerInfos: [
+            {
+              layer: featureLayer2,
+              title: "VIH"
+            }
+          ]
+          
+        });
+
+        // Add widget to the bottom right corner of the view
+        view.ui.add(legend, "bottom-right");
+        view.ui.add(legend2, "bottom-right");
+      });
     });
   </script>
 </head>
@@ -200,7 +232,7 @@ main p {
   -webkit-transition: -webkit-transform 0.5s;
   -moz-transition: -moz-transform 0.5s;
   transition: transform 0.5s;
-  margin-left:8%;
+  margin-bottom:15%;
 }
 .cd-nav-trigger .cd-nav-icon {
   /* icon created in CSS */

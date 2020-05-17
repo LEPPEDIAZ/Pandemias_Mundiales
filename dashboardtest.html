@@ -1,0 +1,88 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="initial-scale=1, maximum-scale=1,user-scalable=no"
+    />
+    <!--
+  ArcGIS API for JavaScript, https://js.arcgis.com
+  For more information about the widgets-legend sample, read the original sample description at developers.arcgis.com.
+  https://developers.arcgis.com/javascript/latest/sample-code/widgets-legend/index.html
+  -->
+<title>Legend widget - 4.15</title>
+    <link
+      rel="stylesheet"
+      href="https://js.arcgis.com/4.15/esri/themes/light/main.css"
+    />
+
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+      }
+    </style>
+
+    <script src="https://js.arcgis.com/4.15/"></script>
+    <script>
+      require([
+        "esri/views/MapView",
+        "esri/widgets/Legend",
+        "esri/WebMap"
+      ], function(MapView, Legend, WebMap) {
+        var webmap = new WebMap({
+          portalItem: {
+            // autocasts as new PortalItem()
+            id: "ce1ec47baaa3400ba67542911ee5aa3f"
+          }
+        });
+
+        var view = new MapView({
+          container: "viewDiv",
+          map: webmap
+        });
+
+        view.when(function() {
+          // get the first layer in the collection of operational layers in the WebMap
+          // when the resources in the MapView have loaded.
+          var featureLayer = webmap.layers.getItemAt(1);
+          var featureLayer2 = webmap.layers.getItemAt(0);
+          var legend = new Legend({
+            view: view,
+            layerInfos: [
+              {
+                layer: featureLayer,
+                title: "COVID-19"
+              }
+            ]
+            
+          });
+
+          var legend2 = new Legend({
+            view: view,
+            layerInfos: [
+              {
+                layer: featureLayer2,
+                title: "VIH"
+              }
+            ]
+            
+          });
+
+          // Add widget to the bottom right corner of the view
+          view.ui.add(legend, "bottom-right");
+          view.ui.add(legend2, "bottom-right");
+        });
+      });
+    </script>
+  </head>
+
+  <body class="calcite">
+    <div id="viewDiv"></div>
+  </body>
+</html>
