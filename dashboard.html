@@ -16,8 +16,9 @@
     require([
       "esri/views/MapView",
       "esri/widgets/Legend",
+      "esri/widgets/LayerList",
       "esri/WebMap"
-    ], function(MapView, Legend, WebMap) {
+    ], function(MapView, Legend, LayerList, WebMap) {
       var webmap = new WebMap({
         portalItem: {
           // autocasts as new PortalItem()
@@ -27,12 +28,95 @@
 
       var view = new MapView({
         container: "viewDiv",
+        zoom: 3,
         map: webmap
       });
 
+      function defineActions(event) {
+        var item = event.item;
+        if (item.title === "US Demographics") {
+
+          // An array of objects defining actions to place in the LayerList.
+          // By making this array two-dimensional, you can separate similar
+          // actions into separate groups with a breaking line.
+          item.actionsSections = [
+            [{
+              title: "Go to full extent",
+              className: "esri-icon-zoom-out-fixed",
+              id: "full-extent"
+            }, {
+              title: "Layer information",
+              className: "esri-icon-description",
+              id: "information"
+            }],
+            [{
+              title: "Increase opacity",
+              className: "esri-icon-up",
+              id: "increase-opacity"
+            }, {
+              title: "Decrease opacity",
+              className: "esri-icon-down",
+              id: "decrease-opacity"
+            }]
+          ];
+        }
+        }
       view.when(function() {
         // get the first layer in the collection of operational layers in the WebMap
         // when the resources in the MapView have loaded.
+        // Create the LayerList widget with the associated actions
+      // and add it to the top-right corner of the view.
+
+      var layerList = new LayerList({
+        view: view,
+        // executes for each ListItem in the LayerList
+        listItemCreatedFunction: defineActions
+      });
+
+      // Event listener that fires each time an action is triggered
+
+      layerList.on("trigger-action", function(event) {
+
+        // The layer visible in the view at the time of the trigger.
+        var visibleLayer = USALayer.visible ?
+          USALayer : censusLayer;
+
+        // Capture the action id.
+        var id = event.action.id;
+
+        if (id === "full-extent") {
+
+          // if the full-extent action is triggered then navigate
+          // to the full extent of the visible layer
+          view.goTo(visibleLayer.fullExtent);
+
+        } else if (id === "information") {
+
+          // if the information action is triggered, then
+          // open the item details page of the service layer
+          window.open(visibleLayer.url);
+
+        } else if (id === "increase-opacity") {
+
+          // if the increase-opacity action is triggered, then
+          // increase the opacity of the GroupLayer by 0.25
+
+          if (demographicGroupLayer.opacity < 1) {
+            demographicGroupLayer.opacity += 0.25;
+          }
+        } else if (id === "decrease-opacity") {
+
+          // if the decrease-opacity action is triggered, then
+          // decrease the opacity of the GroupLayer by 0.25
+
+          if (demographicGroupLayer.opacity > 0) {
+            demographicGroupLayer.opacity -= 0.25;
+          }
+        }
+      });
+
+      // Add widget to the top right corner of the view
+      view.ui.add(layerList, "top-right");
         var featureLayer = webmap.layers.getItemAt(1);
         var featureLayer2 = webmap.layers.getItemAt(0);
         var legend = new Legend({
@@ -60,6 +144,7 @@
         // Add widget to the bottom right corner of the view
         view.ui.add(legend, "bottom-right");
         view.ui.add(legend2, "bottom-right");
+        
       });
     });
   </script>
