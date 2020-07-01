@@ -1,123 +1,219 @@
-<html>
+<html dir="ltr">
   <head>
-    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta
       name="viewport"
-      content="initial-scale=1,maximum-scale=1,user-scalable=no"
+      content="initial-scale=1, maximum-scale=1,user-scalable=no"
     />
     <!--
   ArcGIS API for JavaScript, https://js.arcgis.com
-  For more information about the layers-csv-projection sample, read the original sample description at developers.arcgis.com.
-  https://developers.arcgis.com/javascript/latest/sample-code/layers-csv-projection/index.html
+  For more information about the popup-multipleelements sample, read the original sample description at developers.arcgis.com.
+  https://developers.arcgis.com/javascript/latest/sample-code/popup-multipleelements/index.html
   -->
-<title>CSVLayer - Project points on the fly - 4.15</title>
+<title>Multiple popup elements - 4.15</title>
 
     <link
       rel="stylesheet"
-      href="https://js.arcgis.com/4.15/esri/themes/dark-red/main.css"
+      href="https://js.arcgis.com/4.15/esri/themes/light/main.css"
     />
+    <script src="https://js.arcgis.com/4.15/"></script>
 
     <style>
       html,
       body,
-      #viewDiv {
-        padding: 0;
-        margin: 0;
+      #mapDiv {
         height: 100%;
         width: 100%;
-        background-color: black;
+        margin: 0;
+        padding: 0;
       }
     </style>
 
-    <script src="https://js.arcgis.com/4.15/"></script>
-
     <script>
       require([
-        "esri/WebMap",
+        "esri/Map",
         "esri/layers/CSVLayer",
         "esri/views/MapView",
-        "esri/widgets/Legend",
-        "esri/widgets/Expand"
-      ], function(WebMap, CSVLayer, MapView, Legend, Expand) {
-        const url =
-          "https://arcgis.github.io/arcgis-samples-javascript/sample-data/hurricanes.csv";
+        "esri/layers/FeatureLayer"
+      ], function(Map,CSVLayer, MapView, FeatureLayer) {
+        var url =
+          "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv";
+          const template = {
+          title: "Curva de Crecimiento",
+          content: "Latitud: {Lat} , Longitud {Long}, date: {1/22/20}",
+          mediaInfos:[{ //define the bar chart
+            caption: "",
+            type:"barchart",
+            value:{
+              fields:["Lat","Long"]
+            }
+          }]
+        };
+        let lineChartValue = new LineChartMediaInfo({
+          fields:["Lat","Long"],
+          normalizedField: null,
+          tooltipField: "<field name>"
+        })
 
-        const csvLayer = new CSVLayer({
-          title: "Hurricanes",
+        var csvLayer = new CSVLayer({
           url: url,
-          copyright: "NOAA",
-          
-          renderer: {
-            type: "unique-value",
-            field: "Category",
-            uniqueValueInfos: createUniqueValueInfos()
+          copyright: "USGS Earthquakes",
+          popupTemplate: template,
+          elevationInfo: {
+            // drapes icons on the surface of the globe
+            mode: "on-the-ground"
           }
         });
 
-        const map = new WebMap({
-          // contains a basemap with a South Pole Stereographic projection
-          // the CSVLayer coordinates will re-project client-side
-          // with the Projection Engine to match the view's Spatial Reference
-          basemap: {
-            portalItem: {
-              id: "ce1ec47baaa3400ba67542911ee5aa3f"
-            }
-          },
+        csvLayer.renderer = {
+          type: "simple", // autocasts as new SimpleRenderer()
+          symbol: {
+            type: "point-3d", // autocasts as new PointSymbol3D()
+            symbolLayers: [
+              {
+                type: "icon", // autocasts as new IconSymbol3DLayer()
+                material: { color: [238, 69, 0, 0.75] },
+                outline: {
+                  width: 0.5,
+                  color: "white"
+                },
+                size: "12px"
+              }
+            ]
+          }
+        };
+
+        // setup the map
+        var map = new Map({
+          basemap: "hybrid",
           layers: [csvLayer]
         });
-
-        const view = new MapView({
-          container: "viewDiv",
+        var view = new MapView({
+          container: "mapDiv",
           map: map,
-          highlightOptions: {
-            color: "#ff642e",
-            haloOpacity: 1,
-            fillOpacity: 0.25
-          },
+          center: [-118.399400711028, 34.08713590709093],
+          zoom: 17,
+          // Since there are many elements, it is best to dock the popup so
+          // the elements display better rather than have to scroll through them all.
           popup: {
             dockEnabled: true,
             dockOptions: {
+              buttonEnabled: false,
               breakpoint: false
             }
           }
         });
 
-        const legendExpand = new Expand({
-          view: view,
-          content: new Legend({
-            view: view,
-            style: "card"
-          })
-        });
-        view.ui.add(legendExpand, "top-left");
+        var featureLayer = new FeatureLayer({
+          url:
+            "https://services.arcgis.com/V6ZHFr6zdgNZuVG0/ArcGIS/rest/services/Beverly%20Hills%20Trees%20By%20Block/FeatureServer/0",
+          popupTemplate: {
+            // autocasts as new PopupTemplate()
+            title: "Beverly Hills trees by block",
 
-        function createUniqueValueInfos() {
-          const fireflyImages = [
-            "cat1.png",
-            "cat2.png",
-            "cat3.png",
-            "cat4.png",
-            "cat5.png"
-          ];
-
-          const baseUrl =
-            "https://arcgis.github.io/arcgis-samples-javascript/sample-data/";
-
-          return fireflyImages.map(function(url, i) {
-            return {
-              value: i + 1, // Category number
-              symbol: {
-                type: "picture-marker",
-                url: baseUrl + url
+            // Set content elements in the order to display.
+            // The first element displayed here is the fieldInfos.
+            content: [
+              {
+                // It is also possible to set the fieldInfos outside of the content
+                // directly in the popupTemplate. If no fieldInfos is specifically set
+                // in the content, it defaults to whatever may be set within the popupTemplate.
+                type: "fields", // FieldsContentElement
+                fieldInfos: [
+                  {
+                    fieldName: "Point_Count",
+                    visible: false,
+                    label: "Count of Points",
+                    format: {
+                      places: 0,
+                      digitSeparator: true
+                    }
+                  },
+                  {
+                    fieldName: "relationships/0/Point_Count_COMMON",
+                    visible: true,
+                    label: "Sum of species tree count",
+                    format: {
+                      places: 0,
+                      digitSeparator: true
+                    },
+                    statisticType: "sum"
+                  },
+                  {
+                    fieldName: "relationships/0/COMMON",
+                    visible: false,
+                    label: "Common Name"
+                  },
+                  {
+                    fieldName: "BLOCKCE10",
+                    visible: true,
+                    label: "Block"
+                  }
+                ]
+              },
+              {
+                // You can also set a descriptive text element. This element
+                // uses an attribute from the featurelayer which displays a
+                // sentence giving the total amount of trees value within a
+                // specified census block. Text elements can only be set within the content.
+                type: "text", // TextContentElement
+                text:
+                  "There are {Point_Count} trees within census block {BLOCKCE10}"
+              },
+              {
+                // You can set a media element within the popup as well. This
+                // can be either an image or a chart. You specify this within
+                // the mediaInfos. The following creates a pie chart in addition
+                // to two separate images. The chart is also set up to work with
+                // related tables. Similar to text elements, media can only be set within the content.
+                type: "media", // MediaContentElement
+                mediaInfos: [
+                  {
+                    title: "<b>Count by type</b>",
+                    type: "pie-chart",
+                    caption: "",
+                    value: {
+                      fields: ["relationships/0/Point_Count_COMMON"],
+                      normalizeField: null,
+                      tooltipField: "relationships/0/COMMON"
+                    }
+                  },
+                  {
+                    title: "<b>Mexican Fan Palm</b>",
+                    type: "image",
+                    caption: "tree species",
+                    value: {
+                      sourceURL:
+                        "https://www.sunset.com/wp-content/uploads/96006df453533f4c982212b8cc7882f5-800x0-c-default.jpg"
+                    }
+                  },
+                  {
+                    title: "<b>Indian Laurel Fig</b>",
+                    caption: "tree species",
+                    value: {
+                      sourceURL:
+                        "https://selectree.calpoly.edu/images/0600/09/original/ficus-microcarpa-tree-3.jpg"
+                    }
+                  }
+                ]
+              },
+              {
+                // You can set a attachment element(s) within the popup as well.
+                // Similar to text and media elements, attachments can only be set
+                // within the content. Any attachmentInfos associated with the feature
+                // will be listed in the popup.
+                type: "attachments" // AttachmentsContentElement
               }
-            };
-          });
-        }
+            ]
+          },
+          outFields: ["*"]
+        });
+        map.add(featureLayer);
       });
     </script>
   </head>
 
   <body>
-    <div id="viewDiv"></div>
+    <div id="mapDiv"></div>
   </body>
 </html>
